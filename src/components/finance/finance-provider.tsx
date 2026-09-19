@@ -22,6 +22,9 @@ type FinanceContextValue = {
 };
 
 const FinanceContext = createContext<FinanceContextValue | null>(null);
+const cloudAvailable = Boolean(
+  import.meta.env["VITE_SUPABASE_URL"] && import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"],
+);
 
 export function FinanceProvider({ children }: { children: ReactNode }) {
   const [cards, setCards] = useState<FinanceCard[]>(demoCards);
@@ -34,6 +37,14 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
   const load = useCallback(async () => {
     const version = ++loadVersion.current;
     setLoading(true);
+    if (!cloudAvailable) {
+      setSignedIn(false);
+      setCards(demoCards);
+      setIncomes(demoIncomes);
+      setTransactions(demoTransactions);
+      setLoading(false);
+      return;
+    }
     const { data: userData } = await supabase.auth.getUser();
     if (version !== loadVersion.current) return;
     if (!userData.user) {
@@ -65,6 +76,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     void load();
+    if (!cloudAvailable) return;
     const { data } = supabase.auth.onAuthStateChange((event) => {
       if (event === "SIGNED_IN" || event === "SIGNED_OUT") void load();
     });
@@ -72,8 +84,9 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
   }, [load]);
 
   const addCard = async (value: NewCard) => {
-    const { data: userData } = await supabase.auth.getUser();
     const local = { ...value, id: crypto.randomUUID() };
+    if (!cloudAvailable) { setCards((current) => [...current, local]); return; }
+    const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) { setCards((current) => [...current, local]); return; }
     const { data, error } = await supabase.from("cards").insert({ ...value, user_id: userData.user.id }).select("id,name,credit_limit,closing_day,due_day,color").single();
     if (error) throw error;
@@ -81,8 +94,9 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
   };
 
   const addIncome = async (value: NewIncome) => {
-    const { data: userData } = await supabase.auth.getUser();
     const local = { ...value, id: crypto.randomUUID() };
+    if (!cloudAvailable) { setIncomes((current) => [...current, local]); return; }
+    const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) { setIncomes((current) => [...current, local]); return; }
     const { data, error } = await supabase.from("incomes").insert({ ...value, user_id: userData.user.id }).select("id,description,amount,reference_month,received_date,status").single();
     if (error) throw error;
@@ -105,6 +119,10 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
       status: index === 0 ? value.status : "pending",
       installment_number: installmentCount > 1 ? index + 1 : 1,
     }));
+    if (!cloudAvailable) {
+      setTransactions((current) => [...current, ...rows]);
+      return;
+    }
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) {
       setTransactions((current) => [...current, ...rows]);
@@ -120,6 +138,10 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
     const current = transactions.find((item) => item.id === id);
     if (!current) return;
     const updated = { ...current, ...value, installment_count: current.installment_count, installment_number: current.installment_number, recurrence: current.recurrence };
+    if (!cloudAvailable) {
+      setTransactions((items) => items.map((item) => item.id === id ? updated : item));
+      return;
+    }
     const { data: userData } = await supabase.auth.getUser();
     if (userData.user) {
       const { error } = await supabase.from("transactions").update(value).eq("id", id).eq("user_id", userData.user.id);
@@ -132,6 +154,10 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
     const current = transactions.find((item) => item.id === id);
     if (!current) return;
     const status = current.status === "paid" ? "pending" : "paid";
+    if (!cloudAvailable) {
+      setTransactions((items) => items.map((item) => item.id === id ? { ...item, status } : item));
+      return;
+    }
     const { data: userData } = await supabase.auth.getUser();
     if (userData.user) {
       const { error } = await supabase.from("transactions").update({ status }).eq("id", id).eq("user_id", userData.user.id);
@@ -144,8 +170,9 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
     const current = transactions.find((item) => item.id === id);
     if (!current) return;
     const seriesId = current.parent_id ?? current.id;
-    const { data: userData } = await supabase.auth.getUser();
-    if (userData.user) {
+    if (cloudAvailable) {
+      const { data: userData } = await supabase.auth.getUser();
+      if (userData.user) {
       if (scope === "single" && id === seriesId) {
         const replacement = transactions.find((item) => item.id !== id && item.parent_id === seriesId);
         if (replacement) {
@@ -162,6 +189,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
         ? await query.or(`id.eq.${seriesId},parent_id.eq.${seriesId}`)
         : await query.eq("id", id);
       if (error) throw error;
+      }
     }
     setTransactions((items) => {
       if (scope === "series") return items.filter((item) => item.id !== seriesId && item.parent_id !== seriesId);
@@ -177,10 +205,12 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
     if (transactions.some((item) => item.card_id === id)) {
       throw new Error("CARD_HAS_TRANSACTIONS");
     }
-    const { data: userData } = await supabase.auth.getUser();
-    if (userData.user) {
-      const { error } = await supabase.from("cards").delete().eq("id", id).eq("user_id", userData.user.id);
-      if (error) throw error;
+    if (cloudAvailable) {
+      const { data: userData } = await supabase.auth.getUser();
+      if (userData.user) {
+        const { error } = await supabase.from("cards").delete().eq("id", id).eq("user_id", userData.user.id);
+        if (error) throw error;
+      }
     }
     setCards((items) => items.filter((item) => item.id !== id));
   };
