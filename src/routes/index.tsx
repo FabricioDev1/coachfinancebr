@@ -8,7 +8,7 @@ import { brl, shortBrl } from "@/lib/finance-data";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/")({
-  head: () => ({ meta: [{ title: "Visão geral — Fintra" }, { name: "description", content: "Veja saldo, receitas, gastos, cartões e próximas contas em uma visão centralizada." }, { property: "og:title", content: "Visão geral — Fintra" }, { property: "og:description", content: "Sua situação financeira atual e futura em um só lugar." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
+  head: () => ({ meta: [{ title: "Visão geral — Manager Finance" }, { name: "description", content: "Veja saldo, receitas, gastos, cartões e próximas contas em uma visão centralizada." }, { property: "og:title", content: "Visão geral — Manager Finance" }, { property: "og:description", content: "Sua situação financeira atual e futura em um só lugar." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
   component: Dashboard,
 });
 
