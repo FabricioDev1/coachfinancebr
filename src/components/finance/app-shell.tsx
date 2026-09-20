@@ -38,7 +38,7 @@ export function AppShell({ children, onNew }: { children: ReactNode; onNew?: () 
       <header className="flex items-center justify-between gap-3">
         <Link to="/" className="flex items-center gap-3">
           <span className="grid size-10 place-items-center rounded-xl bg-gradient-to-br from-primary to-accent font-display text-sm font-bold text-primary-foreground shadow-glass"><WalletCards className="size-5" /></span>
-          <span className="leading-tight"><span className="block font-display text-base font-semibold">Fintra</span><span className="block text-[11px] text-muted-foreground">Controle financeiro</span></span>
+          <span className="leading-tight"><span className="block font-display text-base font-semibold">Manager Finance</span><span className="block text-[11px] text-muted-foreground">Controle financeiro</span></span>
         </Link>
         <NavLinks />
         <div className="flex items-center gap-2">
@@ -47,7 +47,7 @@ export function AppShell({ children, onNew }: { children: ReactNode; onNew?: () 
           {signedIn ? <Button variant="glass" size="icon" onClick={() => void signOut()} title="Sair" aria-label="Sair da conta"><LogOut /></Button> : <Button asChild variant="glass" size="icon"><Link to="/auth" title="Entrar" aria-label="Entrar"><LogIn /></Link></Button>}
           <Sheet>
             <SheetTrigger asChild><Button className="md:hidden" variant="glass" size="icon" aria-label="Abrir menu"><Menu /></Button></SheetTrigger>
-            <SheetContent className="border-glass-border bg-background/95 text-foreground backdrop-blur-2xl"><SheetTitle className="mb-6 font-display">Fintra</SheetTitle><NavLinks mobile /></SheetContent>
+            <SheetContent className="border-glass-border bg-background/95 text-foreground backdrop-blur-2xl"><SheetTitle className="mb-6 font-display">Manager Finance</SheetTitle><NavLinks mobile /></SheetContent>
           </Sheet>
         </div>
       </header>
