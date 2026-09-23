@@ -16,6 +16,8 @@ type FinanceContextValue = {
   updateTransaction: (id: string, value: NewTransaction) => Promise<void>;
   addCard: (value: NewCard) => Promise<void>;
   addIncome: (value: NewIncome) => Promise<void>;
+  updateIncome: (id: string, value: NewIncome) => Promise<void>;
+  removeIncome: (id: string) => Promise<void>;
   togglePaid: (id: string) => Promise<void>;
   removeTransaction: (id: string, scope?: "single" | "series") => Promise<void>;
   removeCard: (id: string) => Promise<void>;
@@ -101,6 +103,33 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
     const { data, error } = await supabase.from("incomes").insert({ ...value, user_id: userData.user.id }).select("id,description,amount,reference_month,received_date,status").single();
     if (error) throw error;
     setIncomes((current) => [...current, data]);
+  };
+
+  const updateIncome = async (id: string, value: NewIncome) => {
+    const current = incomes.find((item) => item.id === id);
+    if (!current) return;
+    const updated = { ...current, ...value };
+    if (!cloudAvailable) {
+      setIncomes((items) => items.map((item) => item.id === id ? updated : item));
+      return;
+    }
+    const { data: userData } = await supabase.auth.getUser();
+    if (userData.user) {
+      const { error } = await supabase.from("incomes").update(value).eq("id", id).eq("user_id", userData.user.id);
+      if (error) throw error;
+    }
+    setIncomes((items) => items.map((item) => item.id === id ? updated : item));
+  };
+
+  const removeIncome = async (id: string) => {
+    if (cloudAvailable) {
+      const { data: userData } = await supabase.auth.getUser();
+      if (userData.user) {
+        const { error } = await supabase.from("incomes").delete().eq("id", id).eq("user_id", userData.user.id);
+        if (error) throw error;
+      }
+    }
+    setIncomes((items) => items.filter((item) => item.id !== id));
   };
 
   const addTransaction = async (value: NewTransaction) => {
@@ -215,7 +244,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
     setCards((items) => items.filter((item) => item.id !== id));
   };
 
-  const value = useMemo(() => ({ cards, incomes, transactions, signedIn, loading, addTransaction, updateTransaction, addCard, addIncome, togglePaid, removeTransaction, removeCard }), [cards, incomes, transactions, signedIn, loading]);
+  const value = useMemo(() => ({ cards, incomes, transactions, signedIn, loading, addTransaction, updateTransaction, addCard, addIncome, updateIncome, removeIncome, togglePaid, removeTransaction, removeCard }), [cards, incomes, transactions, signedIn, loading]);
   return <FinanceContext.Provider value={value}>{children}</FinanceContext.Provider>;
 }
 
