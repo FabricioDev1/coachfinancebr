@@ -7,3 +7,6 @@
 - [x] Adicionar filtros por cartão e faixa de valor
 - [x] Gerar o próximo mês de lançamentos mensais
 - [x] Validar filtros e recorrência mensal em computador e celular
+- [ ] Permitir editar receitas existentes
+- [ ] Permitir excluir receitas com confirmação
+- [ ] Validar criação, edição e exclusão de receitas
