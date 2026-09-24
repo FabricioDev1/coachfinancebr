@@ -34,14 +34,14 @@ export function AppShell({ children, onNew }: { children: ReactNode; onNew?: () 
   }
   if (loading) return <main className="grid min-h-screen place-items-center px-4"><p className="text-sm text-muted-foreground">Carregando seus dados...</p></main>;
   return <div className="relative min-h-screen overflow-x-hidden">
-    <div className="mx-auto max-w-[1400px] px-4 py-5 sm:px-7">
-      <header className="flex items-center justify-between gap-3">
-        <Link to="/" className="flex items-center gap-3">
-          <span className="grid size-10 place-items-center rounded-xl bg-gradient-to-br from-primary to-accent font-display text-sm font-bold text-primary-foreground shadow-glass"><WalletCards className="size-5" /></span>
-          <span className="leading-tight"><span className="block font-display text-base font-semibold">Manager Finance</span><span className="block text-[11px] text-muted-foreground">Controle financeiro</span></span>
+    <div className="mx-auto max-w-[1400px] px-3 py-4 sm:px-7 sm:py-5">
+      <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:flex sm:justify-between sm:gap-3">
+        <Link to="/" className="flex min-w-0 items-center gap-2.5 sm:gap-3">
+          <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-primary to-accent font-display text-sm font-bold text-primary-foreground shadow-glass sm:size-10"><WalletCards className="size-5" /></span>
+          <span className="min-w-0 leading-tight"><span className="block truncate font-display text-sm font-semibold sm:text-base">Manager Finance</span><span className="hidden text-[11px] text-muted-foreground sm:block">Controle financeiro</span></span>
         </Link>
         <NavLinks />
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
           <span className="hidden rounded-full border border-glass-border bg-glass px-3 py-2 text-xs text-muted-foreground backdrop-blur-xl sm:inline">Set • Out • Nov</span>
           {onNew && <Button variant="light" size="pill" onClick={onNew}><Plus /> <span className="hidden sm:inline">Novo lançamento</span></Button>}
           {signedIn ? <Button variant="glass" size="icon" onClick={() => void signOut()} title="Sair" aria-label="Sair da conta"><LogOut /></Button> : <Button asChild variant="glass" size="icon"><Link to="/auth" title="Entrar" aria-label="Entrar"><LogIn /></Link></Button>}
@@ -51,8 +51,8 @@ export function AppShell({ children, onNew }: { children: ReactNode; onNew?: () 
           </Sheet>
         </div>
       </header>
-      <main className="finance-enter mt-6 pb-24">{children}</main>
+      <main className="finance-enter mt-5 pb-32 sm:mt-6 md:pb-24">{children}</main>
     </div>
-    <nav aria-label="Navegação inferior" className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-4 rounded-2xl border border-glass-border bg-background/85 p-1.5 shadow-glass backdrop-blur-2xl md:hidden">{nav.map(({ to, label, icon: Icon }) => <Link key={to} to={to} activeProps={{ className: "bg-glass-strong text-foreground" }} inactiveProps={{ className: "text-muted-foreground" }} className="flex min-w-0 flex-col items-center gap-1 rounded-xl px-1 py-2 text-[10px]"><Icon className="size-4" /><span className="truncate">{label}</span></Link>)}</nav>
+    <nav aria-label="Navegação inferior" className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-4 rounded-2xl border border-glass-border bg-background/85 p-1.5 shadow-glass backdrop-blur-2xl md:hidden">{nav.map(({ to, label, icon: Icon }) => <Link key={to} to={to} activeProps={{ className: "bg-glass-strong text-foreground" }} inactiveProps={{ className: "text-muted-foreground" }} className="flex min-h-12 min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 text-[10px]"><Icon className="size-4 shrink-0" /><span className="w-full truncate text-center">{label}</span></Link>)}</nav>
   </div>;
 }
