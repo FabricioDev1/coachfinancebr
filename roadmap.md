@@ -10,3 +10,4 @@
 - [x] Permitir editar receitas existentes
 - [x] Permitir excluir receitas com confirmação
 - [x] Validar criação, edição e exclusão de receitas
+- [x] Validar telas e formulários em smartphone, sem cortes horizontais ou erros
