@@ -19,8 +19,10 @@ function localToday() {
 }
 
 function invoiceDate(from: string, dueDay: number) {
-  const [year, month] = from.split("-").map(Number);
-  if (!year || !month || month < 1 || month > 12) return from;
+  const parts = from.split("-").map(Number);
+  const year = parts[0];
+  const month = parts[1];
+  if (year === undefined || month === undefined || month < 1 || month > 12) return from;
   const dateForMonth = (y: number, m: number) => {
     const day = Math.min(dueDay, new Date(y, m, 0).getDate());
     return `${y}-${String(m).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
@@ -31,7 +33,11 @@ function invoiceDate(from: string, dueDay: number) {
 }
 
 function formatDate(value: string) {
-  const [year, month, day] = value.split("-").map(Number);
+  const parts = value.split("-").map(Number);
+  const year = parts[0];
+  const month = parts[1];
+  const day = parts[2];
+  if (year === undefined || month === undefined || day === undefined) return value;
   return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(year, month - 1, day));
 }
 
