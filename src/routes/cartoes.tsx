@@ -33,7 +33,11 @@ function invoiceDate(from: string, dueDay: number) {
 }
 
 function formatDate(value: string) {
-  const [year, month, day] = value.split("-").map(Number);
+  const parts = value.split("-").map(Number);
+  const year = parts[0];
+  const month = parts[1];
+  const day = parts[2];
+  if (year === undefined || month === undefined || day === undefined) return value;
   return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(year, month - 1, day));
 }
 
