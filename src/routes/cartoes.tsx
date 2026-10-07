@@ -93,8 +93,8 @@ function CardsPage() {
     </div>
 
     <div className="mt-6 flex flex-wrap items-center gap-3">
-      <Label htmlFor="invoice-from" className="flex items-center gap-2 text-sm text-muted-foreground"><CalendarDays className="size-4" />Consultar a partir de</Label>
-      <Input id="invoice-from" aria-label="Consultar faturas a partir de" type="date" value={fromDate} onChange={(event) => { if (event.target.value) setFromDate(event.target.value); }} className="w-44 border-glass-border bg-glass text-foreground [color-scheme:dark]" />
+      <Label htmlFor="invoice-month" className="flex items-center gap-2 text-sm text-muted-foreground"><CalendarDays className="size-4" />Mês de vencimento da fatura</Label>
+      <Input id="invoice-month" aria-label="Mês de vencimento da fatura" type="month" value={invoiceMonth} onChange={(event) => { if (event.target.value) setInvoiceMonth(event.target.value); }} className="w-44 border-glass-border bg-glass text-foreground [color-scheme:dark]" />
     </div>
 
     <div className="mt-4 grid gap-4 lg:grid-cols-3">
