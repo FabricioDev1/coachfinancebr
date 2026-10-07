@@ -13,23 +13,27 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/cartoes")({ head: () => ({ meta: [{ title: "Cartões — Manager Finance" }, { name: "description", content: "Consulte a próxima fatura, limites e gastos futuros de cada cartão." }, { property: "og:title", content: "Cartões — Manager Finance" }, { property: "og:description", content: "Consulte a próxima fatura de cada cartão a partir de uma data." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }), component: CardsPage });
 
-function localToday() {
+function localInvoiceMonth() {
   const today = new Date();
-  return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+  return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`;
 }
 
-function invoiceDate(from: string, dueDay: number) {
-  const parts = from.split("-").map(Number);
+function invoiceDateForMonth(invoiceMonth: string, dueDay: number) {
+  const parts = invoiceMonth.split("-").map(Number);
   const year = parts[0];
   const month = parts[1];
-  if (year === undefined || month === undefined || month < 1 || month > 12) return from;
-  const dateForMonth = (y: number, m: number) => {
-    const day = Math.min(dueDay, new Date(y, m, 0).getDate());
-    return `${y}-${String(m).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-  };
-  const current = dateForMonth(year, month);
-  const next = new Date(year, month, 1);
-  return current >= from ? current : dateForMonth(next.getFullYear(), next.getMonth() + 1);
+  if (year === undefined || month === undefined || month < 1 || month > 12) return invoiceMonth;
+  const day = Math.min(dueDay, new Date(year, month, 0).getDate());
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
+function formatMonth(value: string) {
+  const parts = value.split("-").map(Number);
+  const year = parts[0];
+  const month = parts[1];
+  if (year === undefined || month === undefined || month < 1 || month > 12) return value;
+  const label = new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric" }).format(new Date(year, month - 1, 1));
+  return `${label[0].toUpperCase()}${label.slice(1)}`;
 }
 
 function formatDate(value: string) {
@@ -43,13 +47,13 @@ function formatDate(value: string) {
 
 function CardsPage() {
   const { cards, transactions, addCard, removeCard } = useFinance();
-  const [fromDate, setFromDate] = useState(localToday);
+  const [invoiceMonth, setInvoiceMonth] = useState(localInvoiceMonth);
   const [open, setOpen] = useState(false);
   const [pendingDelete, setPendingDelete] = useState<FinanceCard | null>(null);
   const [deleting, setDeleting] = useState(false);
   const usage = cards.map((card) => {
-    const dueDate = invoiceDate(fromDate, card.due_day);
-    const month = dueDate.slice(0, 7);
+    const dueDate = invoiceDateForMonth(invoiceMonth, card.due_day);
+    const month = invoiceMonth;
     const cardTransactions = transactions.filter((item) => item.card_id === card.id);
     const used = cardTransactions.filter((item) => item.due_date.startsWith(month)).reduce((sum, item) => sum + item.amount, 0);
     const future = cardTransactions.filter((item) => item.due_date.slice(0, 7) > month).reduce((sum, item) => sum + item.amount, 0);
