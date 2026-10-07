@@ -26,4 +26,5 @@ function TransactionsPage() {
 }
 function Filter({value,setValue,options}:{value:string;setValue:(v:string)=>void;options:readonly string[]}) { return <select value={value} onChange={(e)=>setValue(e.target.value)} className="h-9 rounded-md border border-input bg-transparent px-3 text-sm">{options.map((option)=>{const [v,l]=option.includes("|")?option.split("|"):[option,option];return <option className="bg-background" value={v} key={v}>{l}</option>})}</select> }
 function formatDate(value:string){return new Intl.DateTimeFormat("pt-BR").format(new Date(`${value}T12:00:00`))}
+function invoiceMonth(item:FinanceTransaction,cards:{id:string;closing_day:number}[]){const card=cards.find((c)=>c.id===item.card_id);if(!card)return "—";const issue=new Date(`${item.issue_date}T12:00:00`);if(issue.getDate()>=card.closing_day)issue.setMonth(issue.getMonth()+1);return new Intl.DateTimeFormat("pt-BR",{month:"short",year:"numeric"}).format(issue)}
 function parseFilterValue(value:string){const parsed=Number(value.replace(",","."));return value.trim()!==""&&Number.isFinite(parsed)&&parsed>=0?parsed:null}
