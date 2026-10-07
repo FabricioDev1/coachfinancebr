@@ -33,7 +33,7 @@ function formatMonth(value: string) {
   const month = parts[1];
   if (year === undefined || month === undefined || month < 1 || month > 12) return value;
   const label = new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric" }).format(new Date(year, month - 1, 1));
-  return `${label[0].toUpperCase()}${label.slice(1)}`;
+  return label.length > 0 ? `${label[0]!.toUpperCase()}${label.slice(1)}` : value;
 }
 
 function formatDate(value: string) {
