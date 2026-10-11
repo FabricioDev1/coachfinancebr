@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Reload financial state on authentication events only when the user identity changes; same-user focus events must not unmount unsaved forms.

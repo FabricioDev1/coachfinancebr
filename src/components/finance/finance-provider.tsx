@@ -35,6 +35,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
   const [signedIn, setSignedIn] = useState(false);
   const [loading, setLoading] = useState(true);
   const loadVersion = useRef(0);
+  const activeUserId = useRef<string | null | undefined>(undefined);
 
   const load = useCallback(async () => {
     const version = ++loadVersion.current;
@@ -49,6 +50,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
     }
     const { data: userData } = await supabase.auth.getUser();
     if (version !== loadVersion.current) return;
+    activeUserId.current = userData.user?.id ?? null;
     if (!userData.user) {
       setSignedIn(false);
       setCards(demoCards);
@@ -79,10 +81,23 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     void load();
     if (!cloudAvailable) return;
-    const { data } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_IN" || event === "SIGNED_OUT") void load();
+    let reloadTimer: ReturnType<typeof setTimeout> | undefined;
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT") return;
+      const nextUserId = session?.user.id ?? null;
+      // SIGNED_IN also fires when a tab regains focus. Reload only on account changes:
+      // showing the loading screen unmounts open forms and discards unsaved fields.
+      if (nextUserId === activeUserId.current) return;
+      activeUserId.current = nextUserId;
+      clearTimeout(reloadTimer);
+      // Leave the auth callback before calling getUser (it uses the same auth lock).
+      reloadTimer = setTimeout(() => { void load(); }, 0);
     });
-    return () => data.subscription.unsubscribe();
+    return () => {
+      clearTimeout(reloadTimer);
+      ++loadVersion.current;
+      data.subscription.unsubscribe();
+    };
   }, [load]);
 
   const addCard = async (value: NewCard) => {
