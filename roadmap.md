@@ -13,4 +13,4 @@
 - [x] Validar telas e formulários em smartphone, sem cortes horizontais ou erros
 - [x] Consultar a próxima fatura de cada cartão a partir de uma data
 - [x] Evitar recarregar formulários ao retornar à janela com a mesma conta
-- [ ] Validar retenção de campos e datas ao alternar janelas com uma conta conectada
+- [x] Validar retenção de campos e datas ao alternar janelas com uma conta conectada
