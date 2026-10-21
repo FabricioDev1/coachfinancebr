@@ -65,7 +65,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
     setTransactions([]);
     const [cardsResult, incomesResult, transactionsResult] = await Promise.all([
       supabase.from("cards").select("id,name,credit_limit,closing_day,due_day,color").eq("user_id", userData.user.id).order("created_at"),
-      supabase.from("incomes").select("id,description,amount,reference_month,received_date,status").eq("user_id", userData.user.id).order("reference_month"),
+      supabase.from("incomes").select("id,description,amount,reference_month,received_date,status,is_reserve").eq("user_id", userData.user.id).order("reference_month"),
       supabase.from("transactions").select("id,parent_id,card_id,description,amount,transaction_type,issue_date,due_date,payment_method,payment_source,category,status,installment_number,installment_count,recurrence,recurrence_months").eq("user_id", userData.user.id).order("due_date"),
     ]);
     if (version !== loadVersion.current) return;
@@ -115,7 +115,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
     if (!cloudAvailable) { setIncomes((current) => [...current, local]); return; }
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) { setIncomes((current) => [...current, local]); return; }
-    const { data, error } = await supabase.from("incomes").insert({ ...value, user_id: userData.user.id }).select("id,description,amount,reference_month,received_date,status").single();
+    const { data, error } = await supabase.from("incomes").insert({ ...value, user_id: userData.user.id }).select("id,description,amount,reference_month,received_date,status,is_reserve").single();
     if (error) throw error;
     setIncomes((current) => [...current, data]);
   };

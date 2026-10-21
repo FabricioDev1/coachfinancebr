@@ -17,6 +17,7 @@ export type FinanceIncome = {
   reference_month: string;
   received_date: string | null;
   status: string;
+  is_reserve: boolean;
 };
 
 export type FinanceTransaction = {
@@ -47,9 +48,10 @@ export const demoCards: FinanceCard[] = [
 ];
 
 export const demoIncomes: FinanceIncome[] = [
-  { id: "salary-now", description: "Salário", amount: 3500, reference_month: "2026-09-01", received_date: "2026-09-05", status: "received" },
-  { id: "salary-next", description: "Salário previsto", amount: 3500, reference_month: "2026-10-01", received_date: null, status: "expected" },
-  { id: "freelance", description: "Projeto freelance", amount: 480, reference_month: "2026-09-01", received_date: null, status: "expected" },
+  { id: "salary-now", description: "Salário", amount: 3500, reference_month: "2026-09-01", received_date: "2026-09-05", status: "received", is_reserve: false },
+  { id: "salary-next", description: "Salário previsto", amount: 3500, reference_month: "2026-10-01", received_date: null, status: "expected", is_reserve: false },
+  { id: "freelance", description: "Projeto freelance", amount: 480, reference_month: "2026-09-01", received_date: null, status: "expected", is_reserve: false },
+  { id: "investimento", description: "Investimento mensal", amount: 500, reference_month: "2026-09-01", received_date: "2026-09-05", status: "received", is_reserve: true },
 ];
 
 export const demoTransactions: FinanceTransaction[] = [
