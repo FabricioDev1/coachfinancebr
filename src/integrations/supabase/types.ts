@@ -56,6 +56,7 @@ export type Database = {
           created_at: string
           description: string
           id: string
+          is_reserve: boolean
           received_date: string | null
           reference_month: string
           status: string
@@ -67,6 +68,7 @@ export type Database = {
           created_at?: string
           description: string
           id?: string
+          is_reserve?: boolean
           received_date?: string | null
           reference_month: string
           status?: string
@@ -78,6 +80,7 @@ export type Database = {
           created_at?: string
           description?: string
           id?: string
+          is_reserve?: boolean
           received_date?: string | null
           reference_month?: string
           status?: string

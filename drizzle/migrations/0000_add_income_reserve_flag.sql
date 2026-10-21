@@ -1,0 +1,2 @@
+ALTER TABLE public.incomes ADD COLUMN is_reserve boolean NOT NULL DEFAULT false;
+COMMENT ON COLUMN public.incomes.is_reserve IS 'Marca receitas destinadas à reserva de emergência (ex.: investimentos), separadas do saldo disponível';
