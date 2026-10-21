@@ -14,3 +14,4 @@
 - [x] Consultar a próxima fatura de cada cartão a partir de uma data
 - [x] Evitar recarregar formulários ao retornar à janela com a mesma conta
 - [x] Validar retenção de campos e datas ao alternar janelas com uma conta conectada
+- [x] Separar receitas de reserva de emergência do saldo disponível
