@@ -40,7 +40,7 @@ export function AppShell({ children, onNew }: { children: ReactNode; onNew?: () 
       <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:flex sm:flex-wrap sm:justify-between sm:gap-3">
         <Link to="/" className="flex min-w-0 items-center gap-2.5 sm:gap-3">
           <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-primary to-accent font-display text-sm font-bold text-primary-foreground shadow-glass sm:size-10"><WalletCards className="size-5" /></span>
-          <span className="min-w-0 leading-tight"><span className="block truncate font-display text-sm font-semibold sm:text-base">Coach Finance BR</span><span className="hidden text-[11px] text-muted-foreground sm:block">Controle financeiro</span></span>
+          <span className="min-w-0 leading-tight"><span className="block whitespace-normal font-display text-xs font-semibold sm:text-base">Coach Finance BR</span><span className="hidden text-[11px] text-muted-foreground sm:block">Controle financeiro</span></span>
         </Link>
         <NavLinks />
         <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
