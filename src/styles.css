@@ -68,6 +68,7 @@
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-danger: var(--danger);
+  --color-card-violet: var(--card-violet);
   --shadow-glass: var(--shadow-glass);
 }
 
@@ -99,6 +100,7 @@
   --success: oklch(0.72 0.15 181);
   --warning: oklch(0.8 0.16 78);
   --danger: oklch(0.66 0.22 18);
+  --card-violet: oklch(0.69 0.2 305);
   --shadow-glass: 0 18px 50px oklch(0.08 0.04 255 / 28%);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
