@@ -1,0 +1,14 @@
+import {test} from 'bun:test';
+import {strict as assert} from 'node:assert';
+import {addMonthsISO,shiftMonthKey} from './dates';
+import {invoiceDueDate} from './card-invoice';
+import {splitInCents} from './installments';
+import {monthSummary,cardSummary} from './finance-calc';
+import type {FinanceTransaction,FinanceIncome} from './finance-data';
+test('month end clamps and leap years',()=>{assert.equal(addMonthsISO('2027-01-31',1),'2027-02-28');assert.equal(addMonthsISO('2028-01-31',1),'2028-02-29');assert.equal(addMonthsISO('2026-10-15',3),'2027-01-15');assert.equal(shiftMonthKey('2026-12',1),'2027-01');});
+for(const [close,due,purchase,expected] of [[8,17,'2026-10-07','2026-10-17'],[8,17,'2026-10-08','2026-11-17'],[25,5,'2026-10-20','2026-11-05'],[25,5,'2026-10-26','2026-12-05'],[31,10,'2026-02-27','2026-03-10'],[31,10,'2026-02-28','2026-04-10']] as const)test(`invoice ${purchase} ${close}/${due}`,()=>assert.equal(invoiceDueDate(purchase,close,due),expected));
+test('100 divided in three preserves cents',()=>{assert.deepEqual(splitInCents(100,3),[33.33,33.33,33.34]);assert.equal(splitInCents(100,3).reduce((s,a)=>s+Math.round(a*100),0),10000);});
+const tx=(extra:Partial<FinanceTransaction>):FinanceTransaction=>({id:'x',parent_id:null,card_id:null,description:'x',amount:100,transaction_type:'expense',issue_date:'2026-10-01',due_date:'2026-10-17',payment_method:'pix',payment_source:'x',category:'Outros',status:'pending',installment_number:1,installment_count:1,recurrence:'none',recurrence_months:null,...extra});
+test('transaction revenue increases income, never expenses',()=>{const s=monthSummary([], [tx({transaction_type:'income',status:'paid'})],'2026-10','2026-10-28');assert.equal(s.receivedIncome,100);assert.equal(s.expenses,0);});
+test('reserve accumulated and excluded from spending',()=>{const i:FinanceIncome={id:'r',description:'r',amount:500,reference_month:'2026-09-01',received_date:'2026-09-01',status:'received',is_reserve:true};const s=monthSummary([i],[],'2026-10','2026-10-28');assert.equal(s.reserveTotal,500);assert.equal(s.receivedIncome,0);assert.equal(s.canSpend,0);});
+test('future pending installments occupy limit and income does not',()=>{const s=cardSummary({id:'c',name:'c',credit_limit:200,closing_day:8,due_day:17,color:'brand'},[tx({card_id:'c'}),tx({card_id:'c',due_date:'2026-11-17'}),tx({card_id:'c',transaction_type:'income'})],'2026-10');assert.equal(s.invoiceTotal,100);assert.equal(s.usedLimit,200);assert.equal(s.availableLimit,0);});

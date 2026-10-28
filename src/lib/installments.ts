@@ -1,0 +1,1 @@
+export function splitInCents(amount: number,n: number) { if(!Number.isInteger(n)||n<1||n>120||!Number.isFinite(amount)||amount<=0)throw new Error('Valor ou parcelas inválidos.'); const total=Math.round(amount*100); const base=Math.floor(total/n); return Array.from({length:n},(_,i)=>(base+(i===n-1?total-base*n:0))/100); }
