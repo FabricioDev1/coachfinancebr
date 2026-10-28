@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CartoesRouteImport } from './routes/cartoes'
 import { Route as LancamentosRouteImport } from './routes/lancamentos'
 import { Route as PlanejamentoRouteImport } from './routes/planejamento'
+import { Route as RedefinirSenhaRouteImport } from './routes/redefinir-senha'
 import { Route as AuthenticatedContaRouteImport } from './routes/_authenticated/conta'
 
 const IndexRoute = IndexRouteImport.update({
@@ -46,6 +47,11 @@ const PlanejamentoRoute = PlanejamentoRouteImport.update({
   path: '/planejamento',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RedefinirSenhaRoute = RedefinirSenhaRouteImport.update({
+  id: '/redefinir-senha',
+  path: '/redefinir-senha',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedContaRoute = AuthenticatedContaRouteImport.update({
   id: '/conta',
   path: '/conta',
@@ -58,6 +64,7 @@ export interface FileRoutesByFullPath {
   '/cartoes': typeof CartoesRoute
   '/lancamentos': typeof LancamentosRoute
   '/planejamento': typeof PlanejamentoRoute
+  '/redefinir-senha': typeof RedefinirSenhaRoute
   '/conta': typeof AuthenticatedContaRoute
 }
 export interface FileRoutesByTo {
@@ -66,6 +73,7 @@ export interface FileRoutesByTo {
   '/cartoes': typeof CartoesRoute
   '/lancamentos': typeof LancamentosRoute
   '/planejamento': typeof PlanejamentoRoute
+  '/redefinir-senha': typeof RedefinirSenhaRoute
   '/conta': typeof AuthenticatedContaRoute
 }
 export interface FileRoutesById {
@@ -76,14 +84,28 @@ export interface FileRoutesById {
   '/cartoes': typeof CartoesRoute
   '/lancamentos': typeof LancamentosRoute
   '/planejamento': typeof PlanejamentoRoute
+  '/redefinir-senha': typeof RedefinirSenhaRoute
   '/_authenticated/conta': typeof AuthenticatedContaRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/auth' | '/cartoes' | '/lancamentos' | '/planejamento' | '/conta'
+    | '/'
+    | '/auth'
+    | '/cartoes'
+    | '/lancamentos'
+    | '/planejamento'
+    | '/redefinir-senha'
+    | '/conta'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/cartoes' | '/lancamentos' | '/planejamento' | '/conta'
+  to:
+    | '/'
+    | '/auth'
+    | '/cartoes'
+    | '/lancamentos'
+    | '/planejamento'
+    | '/redefinir-senha'
+    | '/conta'
   id:
     | '__root__'
     | '/'
@@ -92,6 +114,7 @@ export interface FileRouteTypes {
     | '/cartoes'
     | '/lancamentos'
     | '/planejamento'
+    | '/redefinir-senha'
     | '/_authenticated/conta'
   fileRoutesById: FileRoutesById
 }
@@ -102,6 +125,7 @@ export interface RootRouteChildren {
   CartoesRoute: typeof CartoesRoute
   LancamentosRoute: typeof LancamentosRoute
   PlanejamentoRoute: typeof PlanejamentoRoute
+  RedefinirSenhaRoute: typeof RedefinirSenhaRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -148,6 +172,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlanejamentoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/redefinir-senha': {
+      id: '/redefinir-senha'
+      path: '/redefinir-senha'
+      fullPath: '/redefinir-senha'
+      preLoaderRoute: typeof RedefinirSenhaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/conta': {
       id: '/_authenticated/conta'
       path: '/conta'
@@ -176,6 +207,7 @@ const rootRouteChildren: RootRouteChildren = {
   CartoesRoute: CartoesRoute,
   LancamentosRoute: LancamentosRoute,
   PlanejamentoRoute: PlanejamentoRoute,
+  RedefinirSenhaRoute: RedefinirSenhaRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
