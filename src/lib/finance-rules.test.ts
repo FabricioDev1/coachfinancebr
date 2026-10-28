@@ -1,4 +1,4 @@
-import {test} from 'bun:test';
+import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {addMonthsISO,shiftMonthKey} from './dates';
 import {invoiceDueDate} from './card-invoice';
