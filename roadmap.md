@@ -25,6 +25,6 @@
 - [x] Validar retenção de campos e datas ao alternar janelas com uma conta conectada
 - [x] Separar receitas de reserva de emergência do saldo disponível
 
-- [ ] Categorias: armazenamento e integridade por usuário
-- [ ] Categorias: tela e integração com lançamentos e gráficos
-- [ ] Categorias: testes autenticados, demo, segurança e relatório
+- [x] Categorias: armazenamento e integridade por usuário
+- [x] Categorias: tela e integração com lançamentos e gráficos
+- [x] Categorias: testes autenticados, demo, segurança e relatório
