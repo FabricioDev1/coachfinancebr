@@ -1,0 +1,10 @@
+import {test} from 'node:test';
+import {strict as assert} from 'node:assert';
+import {demoCategories} from './finance-data';
+import {normalizeCategoryName,categoryNameError,categoriesFor,sortCategories,systemCategory} from './categories';
+test('normalizes repeated spaces',()=>assert.equal(normalizeCategoryName('  Pets   e  Vet '),'Pets e Vet'));
+test('rejects duplicate names regardless of accent or case',()=>assert.equal(categoryNameError('saude',demoCategories),'Já existe uma categoria com esse nome.'));
+test('requires a nonempty name',()=>assert.equal(categoryNameError('',demoCategories),'Informe um nome.'));
+test('limits names to forty characters',()=>{assert.equal(categoryNameError('x'.repeat(41),demoCategories),'Use no máximo 40 caracteres.');assert.equal(categoryNameError('x'.repeat(40),demoCategories),'');});
+test('income choices include salary extra income and both but not housing',()=>{const names=categoriesFor('income',demoCategories).map(c=>c.name);assert.deepEqual(names,['Salário','Renda extra','Outros']);assert.equal(names.includes('Moradia'),false);});
+test('system default is last and applies to both transaction types',()=>{const sorted=sortCategories([...demoCategories].reverse());assert.equal(sorted.at(-1)?.name,'Outros');assert.equal(systemCategory(sorted)?.kind,'both');assert.equal(systemCategory(sorted)?.is_system,true);});
