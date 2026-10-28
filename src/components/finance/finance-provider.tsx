@@ -53,6 +53,79 @@ export function FinanceProvider({children}:{children:ReactNode}) {
   if(same(owner))setTransactions(c=>scope==='series'?c.filter(t=>t.id!==root&&t.parent_id!==root):c.filter(t=>t.id!==id).map(t=>id===root&&replacement&&t.parent_id===root?{...t,parent_id:replacement.id}:t));
  }
  async function removeCard(id:string){const owner=identity();if(transactions.some(t=>t.card_id===id))throw new Error('CARD_HAS_TRANSACTIONS');if(owner){const r=await supabase.from('cards').delete().eq('id',id).eq('user_id',owner).select('id').single();if(r.error)throw r.error;}if(same(owner))setCards(c=>c.filter(t=>t.id!==id));}
+   async function addCategory(value: NewCategory) {
+     const owner = identity();
+     const name = normalizeCategoryName(value.name);
+     const problem = categoryNameError(name, categories);
+     if (problem) throw new Error(problem);
+     let row: FinanceCategory = { id: crypto.randomUUID(), name, color: value.color, kind: value.kind, is_system: false, sort_order: nextSortOrder(categories) };
+     if (owner) {
+       const r = await supabase.from("categories")
+         .insert({ name, color: value.color, kind: value.kind, sort_order: row.sort_order, user_id: owner })
+         .select(categoryFields).eq("user_id", owner).single();
+       if (r.error) throw r.error;
+       row = r.data;
+     }
+     if (same(owner)) setCategories((c) => sortCategories([...c, row]));
+   }
+
+   async function updateCategory(id: string, value: NewCategory) {
+     const owner = identity();
+     const current = categories.find((c) => c.id === id);
+     if (!current) return;
+     if(current.is_system && (normalizeCategoryName(value.name)!==current.name || value.kind!==current.kind)) throw new Error("CATEGORY_SYSTEM");
+     const name = current.is_system ? current.name : normalizeCategoryName(value.name);
+     const problem = categoryNameError(name, categories, id);
+     if (problem) throw new Error(problem);
+     if (owner) {
+       // o trigger do banco renomeia os lançamentos automaticamente
+       const r = await supabase.from("categories")
+         .update({ name, color: value.color, kind: value.kind })
+         .eq("id", id).eq("user_id", owner).select("id").single();
+       if (r.error) throw r.error;
+     }
+     if (!same(owner)) return;
+     setCategories((c) => sortCategories(c.map((x) => (x.id === id ? { ...x, name, color: value.color, kind: value.kind } : x))));
+     if (name !== current.name) {
+       setTransactions((ts) => ts.map((t) => (t.category === current.name ? { ...t, category: name } : t)));
+     }
+   }
+
+   async function transferCategory(fromId: string, toId: string, deleteSource = false) {
+     const owner = identity();
+     const from = categories.find((c) => c.id === fromId);
+     const to = categories.find((c) => c.id === toId);
+     if (!from || !to) throw new Error("CATEGORY_NOT_FOUND");
+     if (from.id === to.id) throw new Error("CATEGORY_SAME");
+     if (deleteSource && from.is_system) throw new Error("CATEGORY_SYSTEM");
+     let moved = transactions.filter((t) => t.category === from.name).length;
+     if (owner) {
+       const r = await supabase.rpc("transfer_category", { p_from: fromId, p_to: toId, p_delete_source: deleteSource });
+       if (r.error) throw r.error;
+       moved = Number(r.data ?? 0);
+     }
+     if (!same(owner)) return moved;
+     setTransactions((ts) => ts.map((t) => (t.category === from.name ? { ...t, category: to.name } : t)));
+     if (deleteSource) setCategories((c) => c.filter((x) => x.id !== fromId));
+     return moved;
+   }
+
+   async function removeCategory(id: string, transferTo?: string) {
+     const owner = identity();
+     const current = categories.find((c) => c.id === id);
+     if (!current) return;
+     if (current.is_system) throw new Error("CATEGORY_SYSTEM");
+     if (transactions.some((t) => t.category === current.name)) {
+       if (!transferTo) throw new Error("CATEGORY_IN_USE");
+       await transferCategory(id, transferTo, true);
+       return;
+     }
+     if (owner) {
+       const r = await supabase.from("categories").delete().eq("id", id).eq("user_id", owner).select("id").single();
+       if (r.error) throw r.error;
+     }
+     if (same(owner)) setCategories((c) => c.filter((x) => x.id !== id));
+   }
  return <FinanceContext.Provider value={{categories,addCategory,updateCategory,transferCategory,removeCategory,cards,incomes,transactions,signedIn:!!userId,userId,loading,loadError,reload:load,selectedMonth,setSelectedMonth,hideValues,toggleHideValues,money,addCard,updateCard,addIncome,updateIncome,removeIncome,addTransaction,updateTransaction,togglePaid,markManyPaid,removeTransaction,removeCard,exportAll:()=>({categories,cards,incomes,transactions})}}>{children}</FinanceContext.Provider>;
 }
 export function useFinance(){const context=useContext(FinanceContext);if(!context)throw new Error('useFinance must be used inside FinanceProvider');return context;}
