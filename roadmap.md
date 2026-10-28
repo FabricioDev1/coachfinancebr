@@ -1,13 +1,13 @@
 # Roadmap
 
-- [ ] Fase 1: bibliotecas de datas, faturas, parcelas, cores, cálculos e CSV
-- [ ] Fase 2: estado global, operações seguras e recorrências
-- [ ] Fase 3: atualizar telas mantendo o visual
-- [ ] Fase 4: reforçar integridade e isolamento dos dados
-- [ ] Fase 5: conta, exportação e exclusão
-- [ ] Fase 6: cadastro e recuperação de senha
-- [ ] Fase 7: identidade Coach Finance BR e acessibilidade
-- [ ] Fase 8: testes e relatório final
+- [x] Fase 1: bibliotecas de datas, faturas, parcelas, cores, cálculos e CSV
+- [x] Fase 2: estado global, operações seguras e recorrências
+- [x] Fase 3: atualizar telas mantendo o visual
+- [x] Fase 4: reforçar integridade e isolamento dos dados
+- [x] Fase 5: conta, exportação e exclusão
+- [x] Fase 6: cadastro e recuperação de senha
+- [x] Fase 7: identidade Coach Finance BR e acessibilidade
+- [x] Fase 8: testes e relatório final
 
 - [x] Adicionar data de competência aos lançamentos
 - [x] Permitir editar um lançamento existente
