@@ -41,7 +41,37 @@ export type FinanceTransaction = {
   recurrence_months: number | null;
 };
 
-export const categories = ["Alimentação", "Moradia", "Transporte", "Educação", "Saúde", "Lazer", "Assinaturas", "Compras", "Contas", "Outros"] as const;
+export type CategoryKind = "expense" | "income" | "both";
+
+export type FinanceCategory = {
+  id: string;
+  name: string;
+  color: string;      // chave de cardColors: brand | accent | warn | danger | violet
+  kind: string;       // CategoryKind (string para casar com os tipos gerados do Supabase)
+  is_system: boolean;
+  sort_order: number;
+};
+
+/** Mesmas categorias que a migração cria para cada usuário. */
+export const defaultCategories: Omit<FinanceCategory, "id">[] = [
+  { name: "Alimentação", color: "warn",   kind: "expense", is_system: false, sort_order: 1 },
+  { name: "Moradia",     color: "brand",  kind: "expense", is_system: false, sort_order: 2 },
+  { name: "Transporte",  color: "accent", kind: "expense", is_system: false, sort_order: 3 },
+  { name: "Educação",    color: "violet", kind: "expense", is_system: false, sort_order: 4 },
+  { name: "Saúde",       color: "danger", kind: "expense", is_system: false, sort_order: 5 },
+  { name: "Lazer",       color: "accent", kind: "expense", is_system: false, sort_order: 6 },
+  { name: "Assinaturas", color: "violet", kind: "expense", is_system: false, sort_order: 7 },
+  { name: "Compras",     color: "warn",   kind: "expense", is_system: false, sort_order: 8 },
+  { name: "Contas",      color: "brand",  kind: "expense", is_system: false, sort_order: 9 },
+  { name: "Salário",     color: "accent", kind: "income",  is_system: false, sort_order: 10 },
+  { name: "Renda extra", color: "accent", kind: "income",  is_system: false, sort_order: 11 },
+  { name: "Outros",      color: "brand",  kind: "both",    is_system: true,  sort_order: 99 },
+];
+
+export const demoCategories: FinanceCategory[] = defaultCategories.map((c, i) => ({ ...c, id: `demo-cat-${i + 1}` }));
+
+/** @deprecated use `categories` do useFinance(). Mantido só para compatibilidade. */
+export const categories = defaultCategories.map((c) => c.name);
 
 export const demoCards: FinanceCard[] = [
   { id: "inter", name: "Inter", credit_limit: 2000, closing_day: 8, due_day: 17, color: "brand" },
