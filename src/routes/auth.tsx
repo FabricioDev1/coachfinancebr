@@ -1,37 +1,17 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { WalletCards } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-
-export const Route = createFileRoute("/auth")({
-  head: () => ({ meta: [{ title: "Entrar — Manager Finance" }, { name: "description", content: "Entre no Manager Finance para salvar e acompanhar sua vida financeira." }, { property: "og:title", content: "Entrar — Manager Finance" }, { property: "og:description", content: "Acesse seu controle financeiro pessoal." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
-  component: AuthPage,
-});
-
-function AuthPage() {
-  const navigate = useNavigate();
-  const [signup, setSignup] = useState(false);
-  const [message, setMessage] = useState("");
-  const [busy, setBusy] = useState(false);
-  useEffect(() => {
-    void supabase.auth.getUser().then(({ data }) => {
-      if (data.user) void navigate({ to: "/", replace: true });
-    });
-  }, [navigate]);
-  async function submit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault(); setBusy(true); setMessage("");
-    const data = new FormData(event.currentTarget); const email = String(data.get("email") ?? "").trim(); const password = String(data.get("password") ?? "");
-    if (!email.includes("@") || password.length < 8) { setMessage("Use um e-mail válido e uma senha com pelo menos 8 caracteres."); setBusy(false); return; }
-    const result = signup
-      ? await supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin } })
-      : await supabase.auth.signInWithPassword({ email, password });
-    if (result.error) setMessage(result.error.message); else if (signup && !result.data.session) setMessage("Confira seu e-mail para confirmar o cadastro."); else await navigate({ to: "/" });
-    setBusy(false);
-  }
-  async function google() { setBusy(true); const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin }); if (result.error) setMessage("Não foi possível entrar com Google."); setBusy(false); }
-  return <main className="grid min-h-screen place-items-center px-4"><section className="glass-panel w-full max-w-md rounded-[28px] p-7"><div className="mb-7 flex items-center gap-3"><span className="grid size-11 place-items-center rounded-xl bg-gradient-to-br from-primary to-accent"><WalletCards /></span><div><h1 className="font-display text-xl font-semibold">Manager Finance</h1><p className="text-sm text-muted-foreground">Seu dinheiro, mais claro.</p></div></div><form onSubmit={submit} className="space-y-4"><div><Label>E-mail</Label><Input className="mt-2" name="email" type="email" maxLength={255} required /></div><div><Label>Senha</Label><Input className="mt-2" name="password" type="password" minLength={8} maxLength={72} required /></div>{message && <p className="text-sm text-warning">{message}</p>}<Button className="w-full" size="lg" disabled={busy}>{signup ? "Criar conta" : "Entrar"}</Button></form><div className="my-4 flex items-center gap-3 text-xs text-muted-foreground"><span className="h-px flex-1 bg-border"/>ou<span className="h-px flex-1 bg-border"/></div><Button variant="glass" className="w-full" onClick={google} disabled={busy}>Continuar com Google</Button><button className="mt-5 w-full text-sm text-muted-foreground hover:text-foreground" onClick={() => { setSignup(!signup); setMessage(""); }}>{signup ? "Já tenho uma conta" : "Criar uma conta grátis"}</button></section></main>;
+import {createFileRoute,useNavigate} from '@tanstack/react-router';
+import {useEffect,useState} from 'react';
+import {WalletCards,Eye,EyeOff} from 'lucide-react';
+import {supabase} from '@/integrations/supabase/client';
+import {lovable} from '@/integrations/lovable';
+import {validPassword,authError} from '@/lib/auth-validation';
+import {Button} from '@/components/ui/button';
+import {Input} from '@/components/ui/input';
+import {Label} from '@/components/ui/label';
+export const Route=createFileRoute('/auth')({head:()=>({meta:[{title:'Entrar — Coach Finance BR'},{name:'description',content:'Entre no Coach Finance BR e acompanhe sua vida financeira.'},{property:'og:title',content:'Entrar — Coach Finance BR'},{property:'og:description',content:'Acesse sua conta e seu controle financeiro pessoal.'},{property:'og:type',content:'website'},{name:'twitter:card',content:'summary_large_image'}]}),component:AuthPage});
+function AuthPage(){const navigate=useNavigate();const [signup,setSignup]=useState(false),[message,setMessage]=useState(''),[busy,setBusy]=useState(false),[visible,setVisible]=useState(false),[email,setEmail]=useState('');
+ useEffect(()=>{void supabase.auth.getUser().then(({data})=>{if(data.user)void navigate({to:'/',replace:true});}).catch(()=>{});},[navigate]);
+ async function submit(e:React.FormEvent<HTMLFormElement>){e.preventDefault();if(busy)return;const f=new FormData(e.currentTarget),password=String(f.get('password')??'');if(signup&&!validPassword(password)){setMessage('Use pelo menos 8 caracteres, com letra e número.');return;}if(signup&&password!==f.get('confirm')){setMessage('As senhas não coincidem.');return;}setBusy(true);setMessage('');try{const r=signup?await supabase.auth.signUp({email:email.trim(),password,options:{emailRedirectTo:window.location.origin}}):await supabase.auth.signInWithPassword({email:email.trim(),password});if(r.error)setMessage(authError(r.error));else if(signup&&!r.data.session)setMessage('Confira seu e-mail para confirmar o cadastro.');else await navigate({to:'/'});}catch{setMessage('Não foi possível concluir. Tente novamente.');}finally{setBusy(false);}}
+ async function reset(){if(!email.includes('@')){setMessage('Informe seu e-mail para recuperar a senha.');return;}setBusy(true);try{await supabase.auth.resetPasswordForEmail(email.trim(),{redirectTo:`${window.location.origin}/redefinir-senha`});}catch{}finally{setMessage('Se o e-mail existir, enviaremos um link.');setBusy(false);}}
+ async function google(){setBusy(true);setMessage('');try{const r=await lovable.auth.signInWithOAuth('google',{redirect_uri:window.location.origin});if(r.error)setMessage('Não foi possível entrar com Google.');}catch{setMessage('Não foi possível entrar com Google.');}finally{setBusy(false);}}
+ return <main className="grid min-h-screen place-items-center px-4"><section className="glass-panel w-full max-w-md rounded-[28px] p-7"><div className="mb-7 flex items-center gap-3"><span className="grid size-11 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-primary to-accent"><WalletCards/></span><div><h1 className="font-display text-xl font-semibold">Coach Finance BR</h1><p className="text-sm text-muted-foreground">Seu dinheiro, mais claro.</p></div></div><form onSubmit={submit} className="space-y-4"><div><Label htmlFor="auth-email">E-mail</Label><Input className="mt-2" id="auth-email" name="email" type="email" autoComplete="email" maxLength={255} required value={email} onChange={e=>setEmail(e.target.value)}/></div><div><Label htmlFor="auth-password">Senha</Label><div className="relative mt-2"><Input className="pr-12" id="auth-password" name="password" type={visible?'text':'password'} autoComplete={signup?'new-password':'current-password'} minLength={signup?8:1} maxLength={72} required/><Button className="absolute right-0 top-0" type="button" variant="ghost" size="icon" aria-label={visible?'Ocultar senha':'Mostrar senha'} onClick={()=>setVisible(v=>!v)}>{visible?<EyeOff/>:<Eye/>}</Button></div></div>{signup&&<div><Label htmlFor="auth-confirm">Confirmar senha</Label><Input className="mt-2" id="auth-confirm" name="confirm" type={visible?'text':'password'} autoComplete="new-password" required/></div>}{message&&<p role="status" className="text-sm text-warning">{message}</p>}<Button className="w-full" size="lg" disabled={busy}>{busy?'Aguarde...':signup?'Criar conta':'Entrar'}</Button></form>{!signup&&<Button variant="link" className="mt-2 w-full" onClick={()=>void reset()} disabled={busy}>Esqueci minha senha</Button>}<div className="my-4 flex items-center gap-3 text-xs text-muted-foreground"><span className="h-px flex-1 bg-border"/>ou<span className="h-px flex-1 bg-border"/></div><Button variant="glass" className="w-full" onClick={()=>void google()} disabled={busy}>Continuar com Google</Button><Button variant="link" className="mt-5 w-full" onClick={()=>{setSignup(v=>!v);setMessage('');}}>{signup?'Já tenho uma conta':'Criar uma conta grátis'}</Button></section></main>;
 }

@@ -10,3 +10,10 @@
 <!-- LOVABLE:END -->
 
 - Reload financial state on authentication events only when the user identity changes; same-user focus events must not unmount unsaved forms.
+
+- Centralize local calendar arithmetic, invoice due dates, cent-based installments, and financial totals in pure lib modules; screens share these rules to prevent divergent balances.
+- FinanceProvider owns selected month and value visibility, and uses its loaded identity for mutations; same-user auth events preserve unsaved forms.
+- Extend indefinite series on authenticated load using canonical series dates and a database uniqueness constraint; duplicate loads cannot duplicate installments.
+- Keep protected account pages under the client-only _authenticated layout and protect account deletion with requireSupabaseAuth; import the admin client only inside its handler.
+- Delete finance rows atomically through an auth deletion lifecycle trigger rather than new foreign keys to the managed auth schema; existing account data remains compatible.
+- Keep generated integration files, route tree, and Vite configuration unchanged, and use existing dependencies for this revision.

@@ -10,14 +10,20 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CartoesRouteImport } from './routes/cartoes'
 import { Route as LancamentosRouteImport } from './routes/lancamentos'
 import { Route as PlanejamentoRouteImport } from './routes/planejamento'
+import { Route as AuthenticatedContaRouteImport } from './routes/_authenticated/conta'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -40,6 +46,11 @@ const PlanejamentoRoute = PlanejamentoRouteImport.update({
   path: '/planejamento',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedContaRoute = AuthenticatedContaRouteImport.update({
+  id: '/conta',
+  path: '/conta',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -47,6 +58,7 @@ export interface FileRoutesByFullPath {
   '/cartoes': typeof CartoesRoute
   '/lancamentos': typeof LancamentosRoute
   '/planejamento': typeof PlanejamentoRoute
+  '/conta': typeof AuthenticatedContaRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -54,25 +66,38 @@ export interface FileRoutesByTo {
   '/cartoes': typeof CartoesRoute
   '/lancamentos': typeof LancamentosRoute
   '/planejamento': typeof PlanejamentoRoute
+  '/conta': typeof AuthenticatedContaRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/cartoes': typeof CartoesRoute
   '/lancamentos': typeof LancamentosRoute
   '/planejamento': typeof PlanejamentoRoute
+  '/_authenticated/conta': typeof AuthenticatedContaRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/cartoes' | '/lancamentos' | '/planejamento'
+  fullPaths:
+    '/' | '/auth' | '/cartoes' | '/lancamentos' | '/planejamento' | '/conta'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/cartoes' | '/lancamentos' | '/planejamento'
-  id: '__root__' | '/' | '/auth' | '/cartoes' | '/lancamentos' | '/planejamento'
+  to: '/' | '/auth' | '/cartoes' | '/lancamentos' | '/planejamento' | '/conta'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/cartoes'
+    | '/lancamentos'
+    | '/planejamento'
+    | '/_authenticated/conta'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   CartoesRoute: typeof CartoesRoute
   LancamentosRoute: typeof LancamentosRoute
@@ -86,6 +111,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -116,11 +148,30 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlanejamentoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/conta': {
+      id: '/_authenticated/conta'
+      path: '/conta'
+      fullPath: '/conta'
+      preLoaderRoute: typeof AuthenticatedContaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedContaRoute: typeof AuthenticatedContaRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedContaRoute: AuthenticatedContaRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   CartoesRoute: CartoesRoute,
   LancamentosRoute: LancamentosRoute,
