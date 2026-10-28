@@ -1,6 +1,6 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { BarChart3, CalendarRange, CreditCard, ListFilter, LogIn, LogOut, Menu, Plus, WalletCards, ChevronLeft, ChevronRight, Eye, EyeOff, UserRound } from "lucide-react";
+import { BarChart3, CalendarRange, CreditCard, ListFilter, LogIn, LogOut, Menu, Plus, WalletCards, ChevronLeft, ChevronRight, Eye, EyeOff, UserRound, Tags } from "lucide-react";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -13,6 +13,7 @@ const nav = [
   { to: "/", label: "Visão geral", icon: BarChart3 },
   { to: "/lancamentos", label: "Lançamentos", icon: ListFilter },
   { to: "/cartoes", label: "Cartões", icon: CreditCard },
+  { to: "/categorias", label: "Categorias", icon: Tags },
   { to: "/planejamento", label: "Planejamento", icon: CalendarRange },
 ] as const;
 
@@ -56,6 +57,6 @@ export function AppShell({ children, onNew }: { children: ReactNode; onNew?: () 
       <div className="mt-4 flex items-center justify-center gap-2 sm:justify-end"><Button size="icon" variant="glass" aria-label="Mês anterior" onClick={()=>setSelectedMonth(shiftMonthKey(selectedMonth,-1))}><ChevronLeft/></Button><span className="w-40 text-center text-sm"><span className="hidden sm:inline">{monthLabel(selectedMonth)}</span><span className="sm:hidden">{monthShortLabel(selectedMonth)}</span></span><Button size="icon" variant="glass" aria-label="Próximo mês" onClick={()=>setSelectedMonth(shiftMonthKey(selectedMonth,1))}><ChevronRight/></Button>{selectedMonth!==currentMonthKey()&&<Button variant="glass" onClick={()=>setSelectedMonth(currentMonthKey())}>Hoje</Button>}</div>
       <main className="finance-enter mt-5 pb-32 sm:mt-6 md:pb-24">{loadError?<section role="alert" className="glass-panel rounded-2xl p-6"><p>{loadError}</p><Button className="mt-4" onClick={()=>void reload()}>Tentar novamente</Button></section>:children}</main>
     </div>
-    <nav aria-label="Navegação inferior" className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-4 rounded-2xl border border-glass-border bg-background/85 p-1.5 shadow-glass backdrop-blur-2xl md:hidden">{nav.map(({ to, label, icon: Icon }) => <Link key={to} to={to} activeProps={{ className: "bg-glass-strong text-foreground" }} inactiveProps={{ className: "text-muted-foreground" }} className="flex min-h-12 min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 text-[10px]"><Icon className="size-4 shrink-0" /><span className="w-full truncate text-center">{label}</span></Link>)}</nav>
+    <nav aria-label="Navegação inferior" className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-5 rounded-2xl border border-glass-border bg-background/85 p-1.5 shadow-glass backdrop-blur-2xl md:hidden">{nav.map(({ to, label, icon: Icon }) => <Link key={to} to={to} activeProps={{ className: "bg-glass-strong text-foreground" }} inactiveProps={{ className: "text-muted-foreground" }} className="flex min-h-12 min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 text-[10px]"><Icon className="size-4 shrink-0" /><span className="w-full truncate text-center">{label}</span></Link>)}</nav>
   </div>;
 }
