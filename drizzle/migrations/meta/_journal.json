@@ -29,6 +29,13 @@
       "when": 1793160899530,
       "tag": "0003_category_cleanup_guard",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793161085808,
+      "tag": "0004_protect_category_system_creation",
+      "breakpoints": true
     }
   ]
 }
