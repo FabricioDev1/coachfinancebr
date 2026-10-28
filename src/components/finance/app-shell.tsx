@@ -1,11 +1,13 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { BarChart3, CalendarRange, CreditCard, ListFilter, LogIn, LogOut, Menu, Plus, WalletCards } from "lucide-react";
+import { BarChart3, CalendarRange, CreditCard, ListFilter, LogIn, LogOut, Menu, Plus, WalletCards, ChevronLeft, ChevronRight, Eye, EyeOff, UserRound } from "lucide-react";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useFinance } from "@/components/finance/finance-provider";
 import { supabase } from "@/integrations/supabase/client";
+
+import {currentMonthKey,shiftMonthKey,monthLabel,monthShortLabel} from "@/lib/dates";
 
 const nav = [
   { to: "/", label: "Visão geral", icon: BarChart3 },
@@ -23,7 +25,7 @@ function NavLinks({ mobile = false }: { mobile?: boolean }) {
 }
 
 export function AppShell({ children, onNew }: { children: ReactNode; onNew?: () => void }) {
-  const { signedIn, loading } = useFinance();
+  const { signedIn, loading, loadError, reload, selectedMonth, setSelectedMonth, hideValues, toggleHideValues } = useFinance();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   async function signOut() {
@@ -35,23 +37,24 @@ export function AppShell({ children, onNew }: { children: ReactNode; onNew?: () 
   if (loading) return <main className="grid min-h-screen place-items-center px-4"><p className="text-sm text-muted-foreground">Carregando seus dados...</p></main>;
   return <div className="relative min-h-screen overflow-x-hidden">
     <div className="mx-auto max-w-[1400px] px-3 py-4 sm:px-7 sm:py-5">
-      <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:flex sm:justify-between sm:gap-3">
+      <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:flex sm:flex-wrap sm:justify-between sm:gap-3">
         <Link to="/" className="flex min-w-0 items-center gap-2.5 sm:gap-3">
           <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-primary to-accent font-display text-sm font-bold text-primary-foreground shadow-glass sm:size-10"><WalletCards className="size-5" /></span>
-          <span className="min-w-0 leading-tight"><span className="block truncate font-display text-sm font-semibold sm:text-base">Manager Finance</span><span className="hidden text-[11px] text-muted-foreground sm:block">Controle financeiro</span></span>
+          <span className="min-w-0 leading-tight"><span className="block truncate font-display text-sm font-semibold sm:text-base">Coach Finance BR</span><span className="hidden text-[11px] text-muted-foreground sm:block">Controle financeiro</span></span>
         </Link>
         <NavLinks />
         <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
-          <span className="hidden rounded-full border border-glass-border bg-glass px-3 py-2 text-xs text-muted-foreground backdrop-blur-xl sm:inline">Set • Out • Nov</span>
-          {onNew && <Button variant="light" size="pill" onClick={onNew}><Plus /> <span className="hidden sm:inline">Novo lançamento</span></Button>}
+          <Button variant="glass" size="icon" aria-label={hideValues?"Mostrar valores":"Ocultar valores"} title={hideValues?"Mostrar valores":"Ocultar valores"} onClick={toggleHideValues}>{hideValues?<Eye/>:<EyeOff/>}</Button>{signedIn&&<Button asChild variant="glass" size="icon"><Link to="/conta" aria-label="Minha conta" title="Minha conta"><UserRound/></Link></Button>}
+          {onNew && <Button variant="light" size="pill" onClick={onNew} aria-label="Novo lançamento"><Plus /> <span className="hidden sm:inline">Novo lançamento</span></Button>}
           {signedIn ? <Button variant="glass" size="icon" onClick={() => void signOut()} title="Sair" aria-label="Sair da conta"><LogOut /></Button> : <Button asChild variant="glass" size="icon"><Link to="/auth" title="Entrar" aria-label="Entrar"><LogIn /></Link></Button>}
           <Sheet>
             <SheetTrigger asChild><Button className="md:hidden" variant="glass" size="icon" aria-label="Abrir menu"><Menu /></Button></SheetTrigger>
-            <SheetContent className="border-glass-border bg-background/95 text-foreground backdrop-blur-2xl"><SheetTitle className="mb-6 font-display">Manager Finance</SheetTitle><NavLinks mobile /></SheetContent>
+            <SheetContent className="border-glass-border bg-background/95 text-foreground backdrop-blur-2xl"><SheetTitle className="mb-6 font-display">Coach Finance BR</SheetTitle><NavLinks mobile /></SheetContent>
           </Sheet>
         </div>
       </header>
-      <main className="finance-enter mt-5 pb-32 sm:mt-6 md:pb-24">{children}</main>
+      <div className="mt-4 flex items-center justify-center gap-2 sm:justify-end"><Button size="icon" variant="glass" aria-label="Mês anterior" onClick={()=>setSelectedMonth(shiftMonthKey(selectedMonth,-1))}><ChevronLeft/></Button><span className="w-40 text-center text-sm"><span className="hidden sm:inline">{monthLabel(selectedMonth)}</span><span className="sm:hidden">{monthShortLabel(selectedMonth)}</span></span><Button size="icon" variant="glass" aria-label="Próximo mês" onClick={()=>setSelectedMonth(shiftMonthKey(selectedMonth,1))}><ChevronRight/></Button>{selectedMonth!==currentMonthKey()&&<Button variant="glass" onClick={()=>setSelectedMonth(currentMonthKey())}>Hoje</Button>}</div>
+      <main className="finance-enter mt-5 pb-32 sm:mt-6 md:pb-24">{loadError?<section role="alert" className="glass-panel rounded-2xl p-6"><p>{loadError}</p><Button className="mt-4" onClick={()=>void reload()}>Tentar novamente</Button></section>:children}</main>
     </div>
     <nav aria-label="Navegação inferior" className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-4 rounded-2xl border border-glass-border bg-background/85 p-1.5 shadow-glass backdrop-blur-2xl md:hidden">{nav.map(({ to, label, icon: Icon }) => <Link key={to} to={to} activeProps={{ className: "bg-glass-strong text-foreground" }} inactiveProps={{ className: "text-muted-foreground" }} className="flex min-h-12 min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 text-[10px]"><Icon className="size-4 shrink-0" /><span className="w-full truncate text-center">{label}</span></Link>)}</nav>
   </div>;
