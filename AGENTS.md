@@ -17,3 +17,6 @@
 - Keep protected account pages under the client-only _authenticated layout and protect account deletion with requireSupabaseAuth; import the admin client only inside its handler.
 - Delete finance rows atomically through an auth deletion lifecycle trigger rather than new foreign keys to the managed auth schema; existing account data remains compatible.
 - Keep generated integration files, route tree, and Vite configuration unchanged, and use existing dependencies for this revision.
+
+- Store per-user categories separately while transactions retain category names; database triggers cascade renames and enforce references, and the transfer RPC moves all series atomically.
+- Seed default categories only when the user has no category set; later loads preserve intentional deletions and backfill missing legacy names.

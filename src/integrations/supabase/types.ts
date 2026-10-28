@@ -50,6 +50,42 @@ export type Database = {
         }
         Relationships: []
       }
+      categories: {
+        Row: {
+          color: string
+          created_at: string
+          id: string
+          is_system: boolean
+          kind: string
+          name: string
+          sort_order: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          id?: string
+          is_system?: boolean
+          kind?: string
+          name: string
+          sort_order?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          id?: string
+          is_system?: boolean
+          kind?: string
+          name?: string
+          sort_order?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       incomes: {
         Row: {
           amount: number
@@ -175,7 +211,32 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      category_name_key: { Args: { value: string }; Returns: string }
+      ensure_default_categories: {
+        Args: never
+        Returns: {
+          color: string
+          created_at: string
+          id: string
+          is_system: boolean
+          kind: string
+          name: string
+          sort_order: number
+          updated_at: string
+          user_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "categories"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      seed_categories_for: { Args: { p_uid: string }; Returns: undefined }
+      transfer_category: {
+        Args: { p_delete_source?: boolean; p_from: string; p_to: string }
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never

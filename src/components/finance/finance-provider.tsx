@@ -1,14 +1,17 @@
 import {createContext,useCallback,useContext,useEffect,useRef,useState,type ReactNode} from 'react';
 import {supabase} from '@/integrations/supabase/client';
-import {brl,shortBrl,demoCards,demoIncomes,demoTransactions,type FinanceCard,type FinanceIncome,type FinanceTransaction} from '@/lib/finance-data';
+import {brl,shortBrl,demoCategories,type FinanceCategory,demoCards,demoIncomes,demoTransactions,type FinanceCard,type FinanceIncome,type FinanceTransaction} from '@/lib/finance-data';
 import {currentMonthKey,todayISO} from '@/lib/dates';
 import {transactionRows,extendIndefinite,type NewTransaction} from '@/lib/transaction-series';
+import {sortCategories,normalizeCategoryName,categoryNameError,nextSortOrder} from '@/lib/categories';
+type NewCategory={name:string;color:string;kind:string};
 type NewCard=Omit<FinanceCard,'id'>;type NewIncome=Omit<FinanceIncome,'id'>;
-type FinanceContextValue={cards:FinanceCard[];incomes:FinanceIncome[];transactions:FinanceTransaction[];signedIn:boolean;loading:boolean;loadError:string|null;reload:()=>Promise<void>;userId:string|null;selectedMonth:string;setSelectedMonth:(key:string)=>void;hideValues:boolean;toggleHideValues:()=>void;money:(value:number,opts?:{short?:boolean})=>string;addTransaction:(value:NewTransaction)=>Promise<void>;updateTransaction:(id:string,value:NewTransaction)=>Promise<void>;addCard:(value:NewCard)=>Promise<void>;updateCard:(id:string,value:NewCard)=>Promise<void>;addIncome:(value:NewIncome)=>Promise<void>;updateIncome:(id:string,value:NewIncome)=>Promise<void>;removeIncome:(id:string)=>Promise<void>;togglePaid:(id:string)=>Promise<void>;markManyPaid:(ids:string[])=>Promise<void>;removeTransaction:(id:string,scope?:'single'|'series')=>Promise<void>;removeCard:(id:string)=>Promise<void>;exportAll:()=>{cards:FinanceCard[];incomes:FinanceIncome[];transactions:FinanceTransaction[]}};
+type FinanceContextValue={categories:FinanceCategory[];addCategory:(value:NewCategory)=>Promise<void>;updateCategory:(id:string,value:NewCategory)=>Promise<void>;transferCategory:(fromId:string,toId:string,deleteSource?:boolean)=>Promise<number>;removeCategory:(id:string,transferTo?:string)=>Promise<void>;cards:FinanceCard[];incomes:FinanceIncome[];transactions:FinanceTransaction[];signedIn:boolean;loading:boolean;loadError:string|null;reload:()=>Promise<void>;userId:string|null;selectedMonth:string;setSelectedMonth:(key:string)=>void;hideValues:boolean;toggleHideValues:()=>void;money:(value:number,opts?:{short?:boolean})=>string;addTransaction:(value:NewTransaction)=>Promise<void>;updateTransaction:(id:string,value:NewTransaction)=>Promise<void>;addCard:(value:NewCard)=>Promise<void>;updateCard:(id:string,value:NewCard)=>Promise<void>;addIncome:(value:NewIncome)=>Promise<void>;updateIncome:(id:string,value:NewIncome)=>Promise<void>;removeIncome:(id:string)=>Promise<void>;togglePaid:(id:string)=>Promise<void>;markManyPaid:(ids:string[])=>Promise<void>;removeTransaction:(id:string,scope?:'single'|'series')=>Promise<void>;removeCard:(id:string)=>Promise<void>;exportAll:()=>{categories:FinanceCategory[];cards:FinanceCard[];incomes:FinanceIncome[];transactions:FinanceTransaction[]}};
 const FinanceContext=createContext<FinanceContextValue|null>(null);
 const cloudAvailable=Boolean(import.meta.env['VITE_SUPABASE_URL']&&import.meta.env['VITE_SUPABASE_PUBLISHABLE_KEY']);
-const cardFields='id,name,credit_limit,closing_day,due_day,color';const incomeFields='id,description,amount,reference_month,received_date,status,is_reserve';const transactionFields='id,parent_id,card_id,description,amount,transaction_type,issue_date,due_date,payment_method,payment_source,category,status,installment_number,installment_count,recurrence,recurrence_months';
+const categoryFields='id,name,color,kind,is_system,sort_order';const cardFields='id,name,credit_limit,closing_day,due_day,color';const incomeFields='id,description,amount,reference_month,received_date,status,is_reserve';const transactionFields='id,parent_id,card_id,description,amount,transaction_type,issue_date,due_date,payment_method,payment_source,category,status,installment_number,installment_count,recurrence,recurrence_months';
 export function FinanceProvider({children}:{children:ReactNode}) {
+ const [categories,setCategories]=useState<FinanceCategory[]>(demoCategories);
  const [cards,setCards]=useState<FinanceCard[]>(demoCards),[incomes,setIncomes]=useState<FinanceIncome[]>(demoIncomes),[transactions,setTransactions]=useState<FinanceTransaction[]>(demoTransactions);
  const [loading,setLoading]=useState(true),[loadError,setLoadError]=useState<string|null>(null),[userId,setUserId]=useState<string|null>(null),[selectedMonth,setSelectedMonth]=useState(currentMonthKey),[hideValues,setHideValues]=useState(false);
  const activeUserId=useRef<string|null|undefined>(undefined),loadVersion=useRef(0),extending=useRef(false);
@@ -22,14 +25,14 @@ export function FinanceProvider({children}:{children:ReactNode}) {
    if(cloudAvailable){const {data,error}=await supabase.auth.getUser();if(error&&error.name!=='AuthSessionMissingError')throw error;id=data.user?.id??null;}
    if(version!==loadVersion.current)return;
    const changed=activeUserId.current!==id;activeUserId.current=id;setUserId(id);
-   if(!id){if(changed){setCards(demoCards);setIncomes(demoIncomes);setTransactions(demoTransactions);}return;}
-   if(changed){setCards([]);setIncomes([]);setTransactions([]);}
-   const [c,i,t]=await Promise.all([supabase.from('cards').select(cardFields).eq('user_id',id).order('created_at'),supabase.from('incomes').select(incomeFields).eq('user_id',id).order('reference_month'),supabase.from('transactions').select(transactionFields).eq('user_id',id).order('due_date')]);
-   if(c.error)throw c.error;if(i.error)throw i.error;if(t.error)throw t.error;
+   if(!id){if(changed){setCategories(demoCategories);setCards(demoCards);setIncomes(demoIncomes);setTransactions(demoTransactions);}return;}
+   if(changed){setCategories([]);setCards([]);setIncomes([]);setTransactions([]);}
+   const [c,i,t,cat]=await Promise.all([supabase.from('cards').select(cardFields).eq('user_id',id).order('created_at'),supabase.from('incomes').select(incomeFields).eq('user_id',id).order('reference_month'),supabase.from('transactions').select(transactionFields).eq('user_id',id).order('due_date'),supabase.rpc('ensure_default_categories')]);
+   if(cat.error)throw cat.error;if(c.error)throw c.error;if(i.error)throw i.error;if(t.error)throw t.error;
    if(version!==loadVersion.current)return;
    let loaded:FinanceTransaction[]=t.data??[];
    if(!extending.current){extending.current=true;try{for(const batch of extendIndefinite(loaded,todayISO())){if(version!==loadVersion.current)break;const result=await supabase.from('transactions').insert(batch.map(row=>({...row,user_id:id}))).select(transactionFields).eq('user_id',id);if(result.error){if(result.error.code==='23505'){const fresh=await supabase.from('transactions').select(transactionFields).eq('user_id',id).order('due_date');if(fresh.error)throw fresh.error;loaded=fresh.data??[];}else throw result.error;}else loaded=[...loaded,...(result.data??[])];}}finally{extending.current=false;}}
-   if(version!==loadVersion.current)return;setCards(c.data??[]);setIncomes(i.data??[]);setTransactions(loaded);
+   if(version!==loadVersion.current)return;setCategories(sortCategories(cat.data??[]));setCards(c.data??[]);setIncomes(i.data??[]);setTransactions(loaded);
   }catch{if(version===loadVersion.current)setLoadError('Não foi possível carregar seus dados.');}finally{if(version===loadVersion.current)setLoading(false);}
  },[]);
  useEffect(()=>{void load();if(!cloudAvailable)return;let timer:ReturnType<typeof setTimeout>|undefined;const {data}=supabase.auth.onAuthStateChange((event,session)=>{if(event!=='SIGNED_IN'&&event!=='SIGNED_OUT')return;const next=session?.user.id??null;if(next===activeUserId.current)return;clearTimeout(timer);timer=setTimeout(()=>void load(),0);});return()=>{clearTimeout(timer);++loadVersion.current;data.subscription.unsubscribe();};},[load]);
@@ -50,6 +53,79 @@ export function FinanceProvider({children}:{children:ReactNode}) {
   if(same(owner))setTransactions(c=>scope==='series'?c.filter(t=>t.id!==root&&t.parent_id!==root):c.filter(t=>t.id!==id).map(t=>id===root&&replacement&&t.parent_id===root?{...t,parent_id:replacement.id}:t));
  }
  async function removeCard(id:string){const owner=identity();if(transactions.some(t=>t.card_id===id))throw new Error('CARD_HAS_TRANSACTIONS');if(owner){const r=await supabase.from('cards').delete().eq('id',id).eq('user_id',owner).select('id').single();if(r.error)throw r.error;}if(same(owner))setCards(c=>c.filter(t=>t.id!==id));}
- return <FinanceContext.Provider value={{cards,incomes,transactions,signedIn:!!userId,userId,loading,loadError,reload:load,selectedMonth,setSelectedMonth,hideValues,toggleHideValues,money,addCard,updateCard,addIncome,updateIncome,removeIncome,addTransaction,updateTransaction,togglePaid,markManyPaid,removeTransaction,removeCard,exportAll:()=>({cards,incomes,transactions})}}>{children}</FinanceContext.Provider>;
+   async function addCategory(value: NewCategory) {
+     const owner = identity();
+     const name = normalizeCategoryName(value.name);
+     const problem = categoryNameError(name, categories);
+     if (problem) throw new Error(problem);
+     let row: FinanceCategory = { id: crypto.randomUUID(), name, color: value.color, kind: value.kind, is_system: false, sort_order: nextSortOrder(categories) };
+     if (owner) {
+       const r = await supabase.from("categories")
+         .insert({ name, color: value.color, kind: value.kind, sort_order: row.sort_order, user_id: owner })
+         .select(categoryFields).eq("user_id", owner).single();
+       if (r.error) throw r.error;
+       row = r.data;
+     }
+     if (same(owner)) setCategories((c) => sortCategories([...c, row]));
+   }
+
+   async function updateCategory(id: string, value: NewCategory) {
+     const owner = identity();
+     const current = categories.find((c) => c.id === id);
+     if (!current) return;
+     if(current.is_system && (normalizeCategoryName(value.name)!==current.name || value.kind!==current.kind)) throw new Error("CATEGORY_SYSTEM");
+     const name = current.is_system ? current.name : normalizeCategoryName(value.name);
+     const problem = categoryNameError(name, categories, id);
+     if (problem) throw new Error(problem);
+     if (owner) {
+       // o trigger do banco renomeia os lançamentos automaticamente
+       const r = await supabase.from("categories")
+         .update({ name, color: value.color, kind: value.kind })
+         .eq("id", id).eq("user_id", owner).select("id").single();
+       if (r.error) throw r.error;
+     }
+     if (!same(owner)) return;
+     setCategories((c) => sortCategories(c.map((x) => (x.id === id ? { ...x, name, color: value.color, kind: value.kind } : x))));
+     if (name !== current.name) {
+       setTransactions((ts) => ts.map((t) => (t.category === current.name ? { ...t, category: name } : t)));
+     }
+   }
+
+   async function transferCategory(fromId: string, toId: string, deleteSource = false) {
+     const owner = identity();
+     const from = categories.find((c) => c.id === fromId);
+     const to = categories.find((c) => c.id === toId);
+     if (!from || !to) throw new Error("CATEGORY_NOT_FOUND");
+     if (from.id === to.id) throw new Error("CATEGORY_SAME");
+     if (deleteSource && from.is_system) throw new Error("CATEGORY_SYSTEM");
+     let moved = transactions.filter((t) => t.category === from.name).length;
+     if (owner) {
+       const r = await supabase.rpc("transfer_category", { p_from: fromId, p_to: toId, p_delete_source: deleteSource });
+       if (r.error) throw r.error;
+       moved = Number(r.data ?? 0);
+     }
+     if (!same(owner)) return moved;
+     setTransactions((ts) => ts.map((t) => (t.category === from.name ? { ...t, category: to.name } : t)));
+     if (deleteSource) setCategories((c) => c.filter((x) => x.id !== fromId));
+     return moved;
+   }
+
+   async function removeCategory(id: string, transferTo?: string) {
+     const owner = identity();
+     const current = categories.find((c) => c.id === id);
+     if (!current) return;
+     if (current.is_system) throw new Error("CATEGORY_SYSTEM");
+     if (transactions.some((t) => t.category === current.name)) {
+       if (!transferTo) throw new Error("CATEGORY_IN_USE");
+       await transferCategory(id, transferTo, true);
+       return;
+     }
+     if (owner) {
+       const r = await supabase.from("categories").delete().eq("id", id).eq("user_id", owner).select("id").single();
+       if (r.error) throw r.error;
+     }
+     if (same(owner)) setCategories((c) => c.filter((x) => x.id !== id));
+   }
+ return <FinanceContext.Provider value={{categories,addCategory,updateCategory,transferCategory,removeCategory,cards,incomes,transactions,signedIn:!!userId,userId,loading,loadError,reload:load,selectedMonth,setSelectedMonth,hideValues,toggleHideValues,money,addCard,updateCard,addIncome,updateIncome,removeIncome,addTransaction,updateTransaction,togglePaid,markManyPaid,removeTransaction,removeCard,exportAll:()=>({categories,cards,incomes,transactions})}}>{children}</FinanceContext.Provider>;
 }
 export function useFinance(){const context=useContext(FinanceContext);if(!context)throw new Error('useFinance must be used inside FinanceProvider');return context;}

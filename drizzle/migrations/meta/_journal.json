@@ -15,6 +15,27 @@
       "when": 1793152550202,
       "tag": "0001_finance_integrity_and_account_cleanup",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793160881676,
+      "tag": "0002_user_categories",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793160899530,
+      "tag": "0003_category_cleanup_guard",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793161085808,
+      "tag": "0004_protect_category_system_creation",
+      "breakpoints": true
     }
   ]
 }

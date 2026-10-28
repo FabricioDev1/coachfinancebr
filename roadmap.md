@@ -24,3 +24,7 @@
 - [x] Evitar recarregar formulários ao retornar à janela com a mesma conta
 - [x] Validar retenção de campos e datas ao alternar janelas com uma conta conectada
 - [x] Separar receitas de reserva de emergência do saldo disponível
+
+- [x] Categorias: armazenamento e integridade por usuário
+- [x] Categorias: tela e integração com lançamentos e gráficos
+- [x] Categorias: testes autenticados, demo, segurança e relatório
