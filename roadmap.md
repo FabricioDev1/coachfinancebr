@@ -28,3 +28,4 @@
 - [x] Categorias: armazenamento e integridade por usuário
 - [x] Categorias: tela e integração com lançamentos e gráficos
 - [x] Categorias: testes autenticados, demo, segurança e relatório
+- [x] Assistente de lançamentos (texto/voz, apenas despesas, 30/dia)
