@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      assistant_usage: {
+        Row: {
+          day: string
+          user_id: string
+          uses: number
+        }
+        Insert: {
+          day: string
+          user_id?: string
+          uses?: number
+        }
+        Update: {
+          day?: string
+          user_id?: string
+          uses?: number
+        }
+        Relationships: []
+      }
       cards: {
         Row: {
           closing_day: number
@@ -212,6 +230,7 @@ export type Database = {
     }
     Functions: {
       category_name_key: { Args: { value: string }; Returns: string }
+      consume_assistant_quota: { Args: { p_limit?: number }; Returns: boolean }
       ensure_default_categories: {
         Args: never
         Returns: {
