@@ -42,7 +42,7 @@ function AssistantPanel({open,onOpenChange}:{open:boolean;onOpenChange:(v:boolea
  const [text,setText]=useState(''),[busy,setBusy]=useState(false),[question,setQuestion]=useState(''),[drafts,setDrafts]=useState<AssistantDraft[]>([]),[editing,setEditing]=useState<AssistantDraft|null>(null),[listening,setListening]=useState(false),[speech,setSpeech]=useState<SpeechCtor|null>(null);
  const rec=useRef<InstanceType<SpeechCtor>|null>(null);
  const box=useKeyboardViewport(open);
- const mobileStyle=box?{top:box.top+8,maxHeight:box.height-16,transform:'translateX(-50%)'}:undefined;
+ const mobileStyle=box?{top:box.top+8,maxHeight:box.height-16}:undefined;
  useEffect(()=>{const w=window as unknown as {SpeechRecognition?:SpeechCtor;webkitSpeechRecognition?:SpeechCtor};setSpeech(()=>w.SpeechRecognition??w.webkitSpeechRecognition??null);},[]);
  function toggleMic(){if(!speech)return;if(listening){rec.current?.stop();return;}const r=new speech();r.lang='pt-BR';r.interimResults=false;r.onresult=e=>{const t=Array.from(e.results).map(x=>x[0]?.transcript??'').join(' ');setText(v=>(v?v+' ':'')+t.trim());};r.onend=()=>setListening(false);r.onerror=()=>setListening(false);rec.current=r;setListening(true);r.start();}
  async function send(){if(busy||text.trim().length<2)return;setBusy(true);setQuestion('');setDrafts([]);try{const r=await interpret({data:{text}});if(r.kind==='drafts')setDrafts(r.drafts);else if(r.kind==='question')setQuestion(r.question);else setQuestion(r.message);}catch{setQuestion('Não foi possível usar o assistente agora.');}finally{setBusy(false);}}
