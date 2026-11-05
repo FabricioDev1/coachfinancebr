@@ -36,6 +36,13 @@
       "when": 1793161085808,
       "tag": "0004_protect_category_system_creation",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793846625302,
+      "tag": "0005_assistant_usage",
+      "breakpoints": true
     }
   ]
 }

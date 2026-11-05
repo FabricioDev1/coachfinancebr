@@ -20,3 +20,4 @@
 
 - Store per-user categories separately while transactions retain category names; database triggers cascade renames and enforce references, and the transfer RPC moves all series atomically.
 - Seed default categories only when the user has no category set; later loads preserve intentional deletions and backfill missing legacy names.
+- Assistant AI parsing runs only in an authenticated server fn that validates drafts via src/lib/assistant-drafts.ts and never writes; saving goes through FinanceProvider.addTransaction so finance rules stay single-sourced.

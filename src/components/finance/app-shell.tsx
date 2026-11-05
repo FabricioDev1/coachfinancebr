@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useFinance } from "@/components/finance/finance-provider";
+import { AssistantButton } from "@/components/finance/assistant-panel";
 import { supabase } from "@/integrations/supabase/client";
 
 import {currentMonthKey,shiftMonthKey,monthLabel,monthShortLabel} from "@/lib/dates";
@@ -46,6 +47,7 @@ export function AppShell({ children, onNew }: { children: ReactNode; onNew?: () 
         <NavLinks />
         <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
           <Button variant="glass" size="icon" aria-label={hideValues?"Mostrar valores":"Ocultar valores"} title={hideValues?"Mostrar valores":"Ocultar valores"} onClick={toggleHideValues}>{hideValues?<Eye/>:<EyeOff/>}</Button>{signedIn&&<Button asChild variant="glass" size="icon"><Link to="/conta" aria-label="Minha conta" title="Minha conta"><UserRound/></Link></Button>}
+          <AssistantButton />
           {onNew && <Button variant="light" size="pill" onClick={onNew} aria-label="Novo lançamento"><Plus /> <span className="hidden sm:inline">Novo lançamento</span></Button>}
           {signedIn ? <Button variant="glass" size="icon" onClick={() => void signOut()} title="Sair" aria-label="Sair da conta"><LogOut /></Button> : <Button asChild variant="glass" size="icon"><Link to="/auth" title="Entrar" aria-label="Entrar"><LogIn /></Link></Button>}
           <Sheet>
