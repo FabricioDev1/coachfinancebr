@@ -26,7 +26,7 @@ Regras: data padrão hoje; entenda "ontem", "dia 3" (mês atual) etc. "em 3x" = 
   try{
    const {generateChatCompletion}=await import('@lovable.dev/ai-gateway');
    const res=await generateChatCompletion({model:'google/gemini-3.1-flash-lite',messages:[{role:'system',content:system},{role:'user',content:data.text}],tools:[tool],tool_choice:{type:'function',function:{name:'responder'}}});
-   const args=res.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
+   const call=res.choices?.[0]?.message?.tool_calls?.[0];const args=call&&call.type==='function'?call.function.arguments:undefined;
    let raw:RawAssistant={};try{raw=args?JSON.parse(args):{};}catch{raw={};}
    return validateAssistant(raw,cards,catsRes.data??[],today);
   }catch(e){
