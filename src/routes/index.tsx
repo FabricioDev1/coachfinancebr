@@ -10,6 +10,7 @@ import {categoryColor} from "@/lib/categories";
 import {colorOf} from "@/lib/card-colors";
 import { Button } from "@/components/ui/button";
 import { DemoIntro, DemoBadge } from "@/components/finance/demo-intro";
+import { InstallHint } from "@/components/finance/install-hint";
 
 export const Route = createFileRoute("/")({
   head: () => ({ meta: [{ title: "Visão geral — Coach Finance BR" }, { name: "description", content: "Veja saldo, receitas, gastos, cartões e próximas contas em uma visão centralizada." }, { property: "og:title", content: "Visão geral — Coach Finance BR" }, { property: "og:description", content: "Sua situação financeira atual e futura em um só lugar." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
@@ -29,6 +30,7 @@ function Dashboard() {
   const dueSoon=pending.filter(t=>t.due_date>=today&&t.due_date<=addDaysISO(today,7)).length;
   const recent=[...transactions].sort((a,b)=>b.issue_date.localeCompare(a.issue_date)).slice(0,4);
   return <AppShell onNew={() => setDialog(true)}><TransactionDialog open={dialog} onOpenChange={setDialog} />
+    <InstallHint />
     {!signedIn && <DemoIntro />}
     <div className="grid gap-4 lg:grid-cols-[1.6fr_1fr]">
       <section className="glass-panel rounded-[24px] p-4 sm:rounded-[28px] sm:p-7"><div className="grid gap-4 sm:flex sm:flex-wrap sm:items-end sm:justify-between"><div className="min-w-0"><div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">Saldo disponível agora{!signedIn&&<DemoBadge/>}</div><h1 className="mt-2 break-words font-display text-3xl font-bold leading-none sm:text-5xl">{show(stats.available)}</h1><p className="mt-2 text-sm text-muted-foreground">de {show(stats.income)} recebidos · {monthLabel(selectedMonth)}</p></div><div className="flex flex-wrap gap-2"><Pill tone="success"><ArrowUpRight/> + {money(stats.expected)} previstas</Pill><Pill tone="danger"><ArrowDownRight/> {money(stats.future)} futuros</Pill></div></div>
