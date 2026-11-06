@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useFinance } from "@/components/finance/finance-provider";
 import { AssistantButton } from "@/components/finance/assistant-panel";
+import { AccessGate, AdminAccessLink, useAccess } from "@/components/finance/access-gate";
 import { supabase } from "@/integrations/supabase/client";
 
 import {currentMonthKey,shiftMonthKey,monthLabel,monthShortLabel} from "@/lib/dates";
@@ -30,6 +31,8 @@ export function AppShell({ children, onNew }: { children: ReactNode; onNew?: () 
   const { signedIn, loading, loadError, reload, selectedMonth, setSelectedMonth, hideValues, toggleHideValues } = useFinance();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const access = useAccess();
+  const approved = !signedIn || access.data?.isAdmin === true || access.data?.access?.status === "approved";
   async function signOut() {
     await queryClient.cancelQueries();
     queryClient.clear();
@@ -46,9 +49,9 @@ export function AppShell({ children, onNew }: { children: ReactNode; onNew?: () 
         </Link>
         <NavLinks />
         <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
-          <Button variant="glass" size="icon" aria-label={hideValues?"Mostrar valores":"Ocultar valores"} title={hideValues?"Mostrar valores":"Ocultar valores"} onClick={toggleHideValues}>{hideValues?<Eye/>:<EyeOff/>}</Button>{signedIn&&<Button asChild variant="glass" size="icon"><Link to="/conta" aria-label="Minha conta" title="Minha conta"><UserRound/></Link></Button>}
-          <AssistantButton />
-          {onNew && <Button variant="light" size="pill" onClick={onNew} aria-label="Novo lançamento"><Plus /> <span className="hidden sm:inline">Novo lançamento</span></Button>}
+          <Button variant="glass" size="icon" aria-label={hideValues?"Mostrar valores":"Ocultar valores"} title={hideValues?"Mostrar valores":"Ocultar valores"} onClick={toggleHideValues}>{hideValues?<Eye/>:<EyeOff/>}</Button>{signedIn&&<Button asChild variant="glass" size="icon"><Link to="/conta" aria-label="Minha conta" title="Minha conta"><UserRound/></Link></Button>}<AdminAccessLink />
+          {approved && <AssistantButton />}
+          {onNew && approved && <Button variant="light" size="pill" onClick={onNew} aria-label="Novo lançamento"><Plus /> <span className="hidden sm:inline">Novo lançamento</span></Button>}
           {signedIn ? <Button variant="glass" size="icon" onClick={() => void signOut()} title="Sair" aria-label="Sair da conta"><LogOut /></Button> : <Button asChild variant="glass" size="icon"><Link to="/auth" title="Entrar" aria-label="Entrar"><LogIn /></Link></Button>}
           <Sheet>
             <SheetTrigger asChild><Button className="md:hidden" variant="glass" size="icon" aria-label="Abrir menu"><Menu /></Button></SheetTrigger>
@@ -57,7 +60,7 @@ export function AppShell({ children, onNew }: { children: ReactNode; onNew?: () 
         </div>
       </header>
       <div className="mt-4 flex items-center justify-center gap-2 sm:justify-end"><Button size="icon" variant="glass" aria-label="Mês anterior" onClick={()=>setSelectedMonth(shiftMonthKey(selectedMonth,-1))}><ChevronLeft/></Button><span className="w-40 text-center text-sm"><span className="hidden sm:inline">{monthLabel(selectedMonth)}</span><span className="sm:hidden">{monthShortLabel(selectedMonth)}</span></span><Button size="icon" variant="glass" aria-label="Próximo mês" onClick={()=>setSelectedMonth(shiftMonthKey(selectedMonth,1))}><ChevronRight/></Button>{selectedMonth!==currentMonthKey()&&<Button variant="glass" onClick={()=>setSelectedMonth(currentMonthKey())}>Hoje</Button>}</div>
-      <main className="finance-enter mt-5 pb-44 sm:mt-6 md:pb-24">{loadError?<section role="alert" className="glass-panel rounded-2xl p-6"><p>{loadError}</p><Button className="mt-4" onClick={()=>void reload()}>Tentar novamente</Button></section>:children}</main>
+      <main className="finance-enter mt-5 pb-44 sm:mt-6 md:pb-24">{loadError?<section role="alert" className="glass-panel rounded-2xl p-6"><p>{loadError}</p><Button className="mt-4" onClick={()=>void reload()}>Tentar novamente</Button></section>:<AccessGate onSignOut={() => void signOut()}>{children}</AccessGate>}</main>
     </div>
     <nav aria-label="Navegação inferior" className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-5 rounded-2xl border border-glass-border bg-background/85 p-1.5 shadow-glass backdrop-blur-2xl md:hidden">{nav.map(({ to, label, icon: Icon }) => <Link key={to} to={to} activeProps={{ className: "bg-glass-strong text-foreground" }} inactiveProps={{ className: "text-muted-foreground" }} className="flex min-h-12 min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 text-[10px]"><Icon className="size-4 shrink-0" /><span className="w-full truncate text-center">{label}</span></Link>)}</nav>
   </div>;
