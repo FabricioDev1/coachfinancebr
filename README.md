@@ -7,7 +7,14 @@
 > [!NOTE]
 > O projeto está em **fase beta**. Qualquer pessoa pode explorar o **modo demonstração** sem criar conta. Contas novas ficam pendentes até o acesso ser liberado pelo administrador; assim que isso acontece, a pessoa vê o aviso "Seu acesso foi liberado".
 
-<!-- Sugestão: adicione aqui 2 ou 3 prints (início, lançamentos e cartões) salvos em docs/prints/ -->
+<p align="center">
+  <img src="docs/prints/visao-geral.png" width="200" alt="Visão geral do mês" />
+  <img src="docs/prints/assistente.png" width="200" alt="Assistente de lançamentos" />
+  <img src="docs/prints/planejamento.png" width="200" alt="Planejamento do mês atual e do próximo" />
+  <img src="docs/prints/categorias.png" width="200" alt="Categorias" />
+</p>
+
+<p align="center"><sub>Telas no iPhone. Os valores foram borrados para preservar dados pessoais.</sub></p>
 
 ---
 
